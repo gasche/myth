@@ -44,6 +44,8 @@ end = struct
   include Hashable.Make(T)
 end
 
+module Rope = Polyrope
+
 let memo_eexp_tbl     : (GTS.t, exp Rope.t) Hashtbl.t =
   Hashtbl.create ~hashable:GTS.hashable ()
 let memo_eexp_rel_tbl : (GTS.t, exp Rope.t) Hashtbl.t =

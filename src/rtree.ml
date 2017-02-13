@@ -242,17 +242,18 @@ and create_matches (s:Sig.t) (g:Ctx.t) (env:env) (t:typ)
                    (scrutinee_min:int) (scrutinee_max:int) : rmatch list =
   if matches <= 0 then [] else
   let ts = Sig.gather_datatypes s in
+  let open Polyrope in
   Util.rangen scrutinee_min scrutinee_max
-    |> Rope.of_list
-    |> Rope.concat_map ~f:begin fun n ->
-      Rope.concat_map ~f:begin fun tscrut ->
+    |> of_list
+    |> concat_map ~f:begin fun n ->
+      concat_map ~f:begin fun tscrut ->
         let svs = Gen.gen_eexp Timeout.unlimited s g tscrut (Gen.gen_metric n 1)
-          |> Rope.map ~f:(evaluate_to_values s env vs)
+          |> map ~f:(evaluate_to_values s env vs)
         in
-        Rope.map ~f:(fun sv -> create_match_one s g env t vs sv matches) svs |> Rope.filter_map ~f:Fn.id
-      end (Rope.of_list ts)
+        map ~f:(fun sv -> create_match_one s g env t vs sv matches) svs |> filter_map ~f:Fn.id
+      end (of_list ts)
     end
-    |> Rope.to_list
+    |> to_list
 
 (* Creates (type-directed) split nodes for the given synthesis problem. *)
 and create_alts (s:Sig.t) (g:Ctx.t) (env:env) (t:typ) (vs:evidence list) (matches:int) : rnode list =
@@ -353,7 +354,7 @@ let rec update_exps ?(short_circuit = true) (timeout:float) (s:Sig.t) (env:env) 
       (* ...and we have not exceeded the max eguess size nor timed out yet. *)
       if (not t.timed_out) && t.sz <= !max_eguess_size then try
         let es = Gen.gen_eexp (Timeout.create timeout) s t.g t.t (Gen.gen_metric t.sz 1) in
-        es |> Rope.iter ~f:begin fun e ->
+        es |> Polyrope.iter ~f:begin fun e ->
             (* TODO: probably want to short-circuit walking through gen_eexp results as well... *)
             if short_circuit then
               match t.es with
